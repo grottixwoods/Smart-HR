@@ -1,10 +1,24 @@
+"""
+Модуль для контроля и корректировки пробелов в сущностях JSON файлов.
+Удаляет лишние пробелы в начале и конце сущностей.
+"""
+
 import json
-
-# Функция correct_offsets(text, entities) корректирует начальные и конечные индексы сущностей в соответствии с текстом.
-# text - текст, entities - список сущностей, каждая представлена словарем с ключами 'start_offset', 'end_offset' и 'label'.
+from typing import Dict, List, Any
 
 
-def correct_offsets(text, entities):
+def correct_offsets(text: str, entities: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    Корректирует начальные и конечные индексы сущностей в соответствии с текстом.
+
+    Args:
+        text (str): Исходный текст.
+        entities (List[Dict[str, Any]]): Список сущностей, каждая представлена словарем
+            с ключами 'start_offset', 'end_offset' и 'label'.
+
+    Returns:
+        List[Dict[str, Any]]: Список скорректированных сущностей.
+    """
     corrected_entities = []
 
     for entity in entities:
@@ -12,13 +26,16 @@ def correct_offsets(text, entities):
         end_offset = entity['end_offset']
         label = entity['label']
 
+        # Ограничиваем индексы длиной текста
         start_offset = max(0, min(start_offset, len(text)))
         end_offset = max(0, min(end_offset, len(text)))
 
+        # Удаляем пробелы в начале сущности
         while start_offset < end_offset and text[start_offset].isspace():
             start_offset += 1
             print('SPACE EDITED')
 
+        # Удаляем пробелы в конце сущности
         while end_offset > start_offset and text[end_offset - 1].isspace():
             end_offset -= 1
             print('SPACE EDITED')
@@ -31,12 +48,19 @@ def correct_offsets(text, entities):
 
     return corrected_entities
 
-# Функция process_spaces_jsonl(input_file_path) обрабатывает JSONL-файл, содержащий записи в формате JSON по одной на строку.
-# input_file_path - путь к входному файлу JSONL.
-# Каждая строка файла обрабатывается, данные извлекаются в формате JSON, и вызывается correct_offsets для коррекции сущностей.
-# Скорректированные данные записываются обратно в выходной файл.
 
-def process_spaces_jsonl(input_file_path):
+def process_spaces_jsonl(input_file_path: str) -> None:
+    """
+    Обрабатывает JSONL-файл, корректируя пробелы в сущностях.
+
+    Args:
+        input_file_path (str): Путь к входному файлу JSONL.
+
+    Note:
+        Каждая строка файла должна содержать JSON объект с ключами:
+        - 'text': текст записи
+        - 'entities': список сущностей
+    """
     with open(input_file_path, 'r', encoding='utf-8') as file:
         lines = file.readlines()
 
